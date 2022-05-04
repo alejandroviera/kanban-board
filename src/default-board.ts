@@ -20,7 +20,7 @@ export default {
         },
         {
           description: "",
-          name: "and thrid",
+          name: "and third",
           id: UniqueID().getID(),
           userAssigned: null,
         },

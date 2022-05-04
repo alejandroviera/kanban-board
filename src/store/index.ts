@@ -1,5 +1,6 @@
 import { createStore } from "vuex";
 import { loadState, saveStatePlugin } from "@/utils/LocalPersistence";
+import UniqueID from "@/utils/UniqueID";
 
 export interface BoardState {
   board: BoardDescriptor;
@@ -19,7 +20,7 @@ export interface TaskDescriptor {
   name: string;
   description: string;
   id: number;
-  userAssigned: string;
+  userAssigned: string | null;
 }
 
 const loadedBoard = loadState();
@@ -40,7 +41,23 @@ export default createStore({
       }
     },
   },
-  mutations: {},
+  mutations: {
+    CREATE_TASK(
+      state: BoardState,
+      { tasks, name }: { tasks: TaskDescriptor[]; name: string }
+    ) {
+      const newTask: TaskDescriptor = {
+        name: name,
+        description: "",
+        id: UniqueID().getID(),
+        userAssigned: null,
+      };
+      tasks.push(newTask);
+    },
+    UPDATE_TASK(state: BoardState, task: TaskDescriptor) {
+      // do nothing. Force plugin execution for persistence update
+    },
+  },
   actions: {},
   modules: {},
 });

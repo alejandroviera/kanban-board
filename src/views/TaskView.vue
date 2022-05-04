@@ -1,17 +1,28 @@
 <template>
   <v-card class="task-view">
-    <v-card-title>{{ task.name }}</v-card-title>
+    <v-card-title>
+      <v-text-field
+        class="task-name-field"
+        v-model="task.name"
+        variant="plain"
+        @change="updateTaskProperty($event, 'name')"
+        @keyup.esc="close"
+      ></v-text-field>
+    </v-card-title>
     <v-card-text>
       <v-textarea
         label="Description"
-        :model-value="task.description"
+        v-model="task.description"
+        variant="plain"
+        @change="updateTaskProperty($event, 'description')"
+        @keyup.esc="close"
       ></v-textarea>
     </v-card-text>
   </v-card>
 </template>
 <script lang="ts" setup>
 import { useStore } from "vuex";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { TaskDescriptor } from "@/store/index";
 
 export interface TaskViewProps {
@@ -20,13 +31,31 @@ export interface TaskViewProps {
 
 const store = useStore();
 const route = useRoute();
+const router = useRouter();
 
 const task = store.getters.getTask(
   parseInt(route.params.id.toString())
 ) as TaskDescriptor;
+
+function updateTaskProperty(event: any, propertyKey: string) {
+  store.commit("UPDATE_TASK", {
+    task,
+    key: propertyKey,
+    value: event.target.value,
+  });
+}
+
+function close() {
+  router.push({ name: "board" });
+}
 </script>
 
 <style>
+.task-name-field input {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
 .task-view {
   position: relative;
   background-color: white;

@@ -1,13 +1,14 @@
 <script lang="ts" setup>
 import { useStore, Store } from "vuex";
 import { useRoute, useRouter } from "vue-router";
-import { computed } from "vue";
-import { BoardState } from "@/store/index";
+import { computed, ref } from "vue";
+import { BoardState, TaskDescriptor } from "@/store/index";
 
 const store = useStore() as Store<BoardState>;
 const router = useRouter();
 
 const isTaskOpen = computed(() => useRoute().name === "task");
+let newTaskName = ref("hola");
 
 function goToTask(taskId: number) {
   router.push({ name: "task", params: { id: taskId } });
@@ -15,6 +16,14 @@ function goToTask(taskId: number) {
 
 function close() {
   router.push({ name: "board" });
+}
+
+function createTask(e: KeyboardEvent, tasks: TaskDescriptor[]) {
+  store.commit("CREATE_TASK", {
+    tasks: tasks,
+    name: newTaskName.value,
+  });
+  newTaskName.value = "";
 }
 </script>
 
@@ -39,6 +48,14 @@ function close() {
               <v-card-text>{{ task.description }}</v-card-text>
               <v-divider></v-divider>
             </v-card>
+            <v-text-field
+              label="+ Enter new task"
+              variant="outlined"
+              color="success"
+              class="bg-transparent mx-4"
+              v-model="newTaskName"
+              @keyup.enter="createTask($event, column.tasks)"
+            ></v-text-field>
           </v-card>
         </v-col>
       </v-row>
