@@ -1,52 +1,52 @@
-import UniqueID from "./utils/UniqueID";
+import UniqueID from './utils/UniqueID'
 
 export default {
-  name: "workshop",
+  name: 'workshop',
   columns: [
     {
-      name: "todo",
+      name: 'todo',
       tasks: [
         {
-          description: "Task description",
-          name: "first task",
+          description: 'Task description',
+          name: 'first task',
           id: UniqueID().getID(),
           userAssigned: null,
         },
         {
-          description: "Second task description",
-          name: "second task",
+          description: 'Second task description',
+          name: 'second task',
           id: UniqueID().getID(),
           userAssigned: null,
         },
         {
-          description: "",
-          name: "and third",
+          description: '',
+          name: 'and third',
           id: UniqueID().getID(),
           userAssigned: null,
         },
       ],
     },
     {
-      name: "in-progress",
+      name: 'in-progress',
       tasks: [
         {
-          description: "",
-          name: "first task",
+          description: '',
+          name: 'first task',
           id: UniqueID().getID(),
           userAssigned: null,
         },
       ],
     },
     {
-      name: "done",
+      name: 'done',
       tasks: [
         {
-          description: "",
-          name: "first task",
+          description: '',
+          name: 'first task',
           id: UniqueID().getID(),
           userAssigned: null,
         },
       ],
     },
   ],
-};
+}

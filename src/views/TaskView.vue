@@ -21,32 +21,32 @@
   </v-card>
 </template>
 <script lang="ts" setup>
-import { useStore } from "vuex";
-import { useRoute, useRouter } from "vue-router";
-import { TaskDescriptor } from "@/store/index";
+import { useStore } from 'vuex'
+import { useRoute, useRouter } from 'vue-router'
+import { TaskDescriptor } from '@/store/index'
 
 export interface TaskViewProps {
-  task: TaskDescriptor;
+  task: TaskDescriptor
 }
 
-const store = useStore();
-const route = useRoute();
-const router = useRouter();
+const store = useStore()
+const route = useRoute()
+const router = useRouter()
 
 const task = store.getters.getTask(
   parseInt(route.params.id.toString())
-) as TaskDescriptor;
+) as TaskDescriptor
 
 function updateTaskProperty(event: any, propertyKey: string) {
-  store.commit("UPDATE_TASK", {
+  store.commit('UPDATE_TASK', {
     task,
     key: propertyKey,
     value: event.target.value,
-  });
+  })
 }
 
 function close() {
-  router.push({ name: "board" });
+  router.push({ name: 'board' })
 }
 </script>
 

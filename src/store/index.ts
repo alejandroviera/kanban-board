@@ -1,29 +1,29 @@
-import { createStore } from "vuex";
-import { loadState, saveStatePlugin } from "@/utils/LocalPersistence";
-import UniqueID from "@/utils/UniqueID";
+import { createStore } from 'vuex'
+import { loadState, saveStatePlugin } from '@/utils/LocalPersistence'
+import UniqueID from '@/utils/UniqueID'
 
 export interface BoardState {
-  board: BoardDescriptor;
+  board: BoardDescriptor
 }
 
 export interface BoardDescriptor {
-  name: string;
-  columns: ColumnDescriptor[];
+  name: string
+  columns: ColumnDescriptor[]
 }
 
 export interface ColumnDescriptor {
-  name: string;
-  tasks: TaskDescriptor[];
+  name: string
+  tasks: TaskDescriptor[]
 }
 
 export interface TaskDescriptor {
-  name: string;
-  description: string;
-  id: number;
-  userAssigned: string | null;
+  name: string
+  description: string
+  id: number
+  userAssigned: string | null
 }
 
-const loadedBoard = loadState();
+const loadedBoard = loadState()
 
 export default createStore({
   plugins: [saveStatePlugin],
@@ -35,7 +35,7 @@ export default createStore({
       for (const column of state.board.columns) {
         for (const task of column.tasks) {
           if (task.id === id) {
-            return task;
+            return task
           }
         }
       }
@@ -48,11 +48,11 @@ export default createStore({
     ) {
       const newTask: TaskDescriptor = {
         name: name,
-        description: "",
+        description: '',
         id: UniqueID().getID(),
         userAssigned: null,
-      };
-      tasks.push(newTask);
+      }
+      tasks.push(newTask)
     },
     UPDATE_TASK(state: BoardState, task: TaskDescriptor) {
       // do nothing. Force plugin execution for persistence update
@@ -64,16 +64,25 @@ export default createStore({
         toColumn,
         taskIndex,
       }: {
-        fromColumn: ColumnDescriptor;
-        toColumn: ColumnDescriptor;
-        taskIndex: number;
+        fromColumn: ColumnDescriptor
+        toColumn: ColumnDescriptor
+        taskIndex: number
       }
     ) {
-      debugger;
-      const taskToMove = fromColumn.tasks.splice(taskIndex, 1)[0];
-      toColumn.tasks.push(taskToMove);
+      const taskToMove = fromColumn.tasks.splice(taskIndex, 1)[0]
+      toColumn.tasks.push(taskToMove)
+    },
+    MOVE_COLUMN(
+      state: BoardState,
+      {
+        fromColumnIndex,
+        toColumnIndex,
+      }: { fromColumnIndex: number; toColumnIndex: number }
+    ) {
+      const columnToMove = state.board.columns.splice(fromColumnIndex, 1)[0]
+      state.board.columns.splice(toColumnIndex, 0, columnToMove)
     },
   },
   actions: {},
   modules: {},
-});
+})
