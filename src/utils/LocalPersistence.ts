@@ -1,8 +1,9 @@
 import { BoardState } from "@/store";
 import defaultBoard from "@/default-board";
+import { Store } from "vuex";
 
-export function saveStatePlugin(store: any) {
-  store.suscribe((mutation: any, state: BoardState) => {
+export function saveStatePlugin(store: Store<BoardState>) {
+  store.subscribe((mutation: any, state: BoardState) => {
     localStorage.setItem("board", JSON.stringify(state.board));
   });
 }

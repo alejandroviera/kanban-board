@@ -1,6 +1,21 @@
 <script lang="ts" setup>
-import { useStore } from "vuex";
-const store = useStore();
+import { useStore, Store } from "vuex";
+import { useRoute, useRouter } from "vue-router";
+import { computed } from "vue";
+import { BoardState } from "@/store/index";
+
+const store = useStore() as Store<BoardState>;
+const router = useRouter();
+
+const isTaskOpen = computed(() => useRoute().name === "task");
+
+function goToTask(taskId: number) {
+  router.push({ name: "task", params: { id: taskId } });
+}
+
+function close() {
+  router.push({ name: "board" });
+}
 </script>
 
 <template>
@@ -18,6 +33,7 @@ const store = useStore();
               v-for="(task, $taskIndex) of column.tasks"
               :key="$taskIndex"
               class="task-card"
+              @click="goToTask(task.id)"
             >
               <v-card-title>{{ task.name }}</v-card-title>
               <v-card-text>{{ task.description }}</v-card-text>
@@ -27,6 +43,10 @@ const store = useStore();
         </v-col>
       </v-row>
     </v-container>
+  </div>
+
+  <div class="task-bg" v-if="isTaskOpen" @click.self="close">
+    <router-view />
   </div>
 </template>
 
@@ -83,5 +103,9 @@ const store = useStore();
 .task-bg {
   background: rgba(0, 0, 0, 0.5);
   position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
 }
 </style>
