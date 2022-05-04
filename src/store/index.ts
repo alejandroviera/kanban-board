@@ -57,6 +57,22 @@ export default createStore({
     UPDATE_TASK(state: BoardState, task: TaskDescriptor) {
       // do nothing. Force plugin execution for persistence update
     },
+    MOVE_TASK(
+      state: BoardState,
+      {
+        fromColumn,
+        toColumn,
+        taskIndex,
+      }: {
+        fromColumn: ColumnDescriptor;
+        toColumn: ColumnDescriptor;
+        taskIndex: number;
+      }
+    ) {
+      debugger;
+      const taskToMove = fromColumn.tasks.splice(taskIndex, 1)[0];
+      toColumn.tasks.push(taskToMove);
+    },
   },
   actions: {},
   modules: {},

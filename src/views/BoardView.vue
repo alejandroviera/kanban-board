@@ -2,7 +2,7 @@
 import { useStore, Store } from "vuex";
 import { useRoute, useRouter } from "vue-router";
 import { computed, ref } from "vue";
-import { BoardState, TaskDescriptor } from "@/store/index";
+import { BoardState, ColumnDescriptor, TaskDescriptor } from "@/store/index";
 
 const store = useStore() as Store<BoardState>;
 const router = useRouter();
@@ -25,6 +25,31 @@ function createTask(e: KeyboardEvent, tasks: TaskDescriptor[]) {
   });
   newTaskName.value = "";
 }
+
+function pickupTask(e: DragEvent, taskIndex: number, columnIndex: number) {
+  const dataTransfer = e.dataTransfer;
+  if (dataTransfer !== null) {
+    debugger;
+    dataTransfer.effectAllowed = "move";
+    dataTransfer.dropEffect = "move";
+    dataTransfer.setData("task-index", taskIndex.toString());
+    dataTransfer.setData("column-index", columnIndex.toString());
+  }
+}
+
+function moveTask(e: DragEvent, column: ColumnDescriptor) {
+  const dataTransfer = e.dataTransfer;
+  if (dataTransfer != null) {
+    const fromColumnIndex = parseInt(dataTransfer.getData("column-index"));
+    const taskIndex = parseInt(dataTransfer.getData("task-index"));
+    const fromColumn = store.state.board.columns[fromColumnIndex];
+    store.commit("MOVE_TASK", {
+      fromColumn: fromColumn,
+      toColumn: column,
+      taskIndex: taskIndex,
+    });
+  }
+}
 </script>
 
 <template>
@@ -35,19 +60,28 @@ function createTask(e: KeyboardEvent, tasks: TaskDescriptor[]) {
           v-for="(column, $columnIndex) of store.state.board.columns"
           :key="$columnIndex"
         >
-          <v-card class="column-card" color="blue-grey-lighten-4">
+          <v-card
+            class="column-card"
+            color="blue-grey-lighten-4"
+            @drop="moveTask($event, column)"
+            @dragover.prevent
+            @dragenter.prevent
+          >
             <v-card-title>{{ column.name }}</v-card-title>
             <v-divider></v-divider>
-            <v-card
+            <div
               v-for="(task, $taskIndex) of column.tasks"
               :key="$taskIndex"
-              class="task-card"
-              @click="goToTask(task.id)"
+              draggable="true"
+              @dragstart="pickupTask($event, $taskIndex, $columnIndex)"
+              style="z-index: 1; transform: translate(0, 0)"
             >
-              <v-card-title>{{ task.name }}</v-card-title>
-              <v-card-text>{{ task.description }}</v-card-text>
-              <v-divider></v-divider>
-            </v-card>
+              <v-card class="task-card" @click="goToTask(task.id)">
+                <v-card-title>{{ task.name }}</v-card-title>
+                <v-card-text>{{ task.description }}</v-card-text>
+                <v-divider></v-divider>
+              </v-card>
+            </div>
             <v-text-field
               label="+ Enter new task"
               variant="outlined"
