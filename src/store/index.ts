@@ -61,16 +61,18 @@ export default createStore({
       state: BoardState,
       {
         fromColumn,
+        fromTaskIndex,
         toColumn,
-        taskIndex,
+        toTaskIndex,
       }: {
         fromColumn: ColumnDescriptor
+        fromTaskIndex: number
         toColumn: ColumnDescriptor
-        taskIndex: number
+        toTaskIndex: number
       }
     ) {
-      const taskToMove = fromColumn.tasks.splice(taskIndex, 1)[0]
-      toColumn.tasks.push(taskToMove)
+      const taskToMove = fromColumn.tasks.splice(fromTaskIndex, 1)[0]
+      toColumn.tasks.splice(toTaskIndex, 0, taskToMove)
     },
     MOVE_COLUMN(
       state: BoardState,

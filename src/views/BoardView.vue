@@ -8,7 +8,7 @@ const store = useStore() as Store<BoardState>
 const router = useRouter()
 
 const isTaskOpen = computed(() => useRoute().name === 'task')
-let newTaskName = ref('hola')
+let newTaskName = ref('')
 
 function goToTask(taskId: number) {
   router.push({ name: 'task', params: { id: taskId } })
@@ -37,27 +37,31 @@ function pickupTask(e: DragEvent, taskIndex: number, columnIndex: number) {
   }
 }
 
-function moveItem(e: DragEvent, columnIndex: number) {
+function moveItem(e: DragEvent, columnIndex: number, taskIndex: number) {
   const dataTransfer = e.dataTransfer
   if (dataTransfer != null) {
     const dragType = dataTransfer.getData('drag-type')
     if (dragType === 'task') {
-      moveTask(e, columnIndex)
+      if (taskIndex == -1) {
+        taskIndex = store.state.board.columns[columnIndex].tasks.length
+      }
+      moveTask(e, columnIndex, taskIndex)
     } else if (dragType === 'column') {
       moveColumn(e, columnIndex)
     }
   }
 }
 
-function moveTask(e: DragEvent, columnIndex: number) {
+function moveTask(e: DragEvent, columnIndex: number, taskIndex: number) {
   const dataTransfer = e.dataTransfer
   if (dataTransfer != null) {
     const fromColumnIndex = parseInt(dataTransfer.getData('column-index'))
-    const taskIndex = parseInt(dataTransfer.getData('task-index'))
+    const fromTaskIndex = parseInt(dataTransfer.getData('task-index'))
     store.commit('MOVE_TASK', {
       fromColumn: store.state.board.columns[fromColumnIndex],
+      fromTaskIndex: fromTaskIndex,
       toColumn: store.state.board.columns[columnIndex],
-      taskIndex: taskIndex,
+      toTaskIndex: taskIndex,
     })
   }
 }
@@ -95,7 +99,7 @@ function pickupColumn(e: DragEvent, columnIndex: number) {
           <v-card
             class="column-card"
             color="blue-grey-lighten-4"
-            @drop="moveItem($event, $columnIndex)"
+            @drop="moveItem($event, $columnIndex, -1)"
             @dragover.prevent
             @dragenter.prevent
             draggable="true"
@@ -108,6 +112,9 @@ function pickupColumn(e: DragEvent, columnIndex: number) {
               :key="$taskIndex"
               draggable="true"
               @dragstart="pickupTask($event, $taskIndex, $columnIndex)"
+              @dragover.prevent
+              @dragenter.prevent
+              @drop.stop="moveItem($event, $columnIndex, $taskIndex)"
               style="z-index: 1; transform: translate(0, 0)"
             >
               <v-card class="task-card" @click="goToTask(task.id)">
