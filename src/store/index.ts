@@ -84,6 +84,9 @@ export default createStore({
       const columnToMove = state.board.columns.splice(fromColumnIndex, 1)[0]
       state.board.columns.splice(toColumnIndex, 0, columnToMove)
     },
+    CREATE_COLUMN(state: BoardState, name: string) {
+      state.board.columns.push({ name: name, tasks: [] })
+    },
   },
   actions: {},
   modules: {},

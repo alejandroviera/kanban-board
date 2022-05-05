@@ -2,13 +2,13 @@
 import { useStore, Store } from 'vuex'
 import { useRoute, useRouter } from 'vue-router'
 import { computed, ref } from 'vue'
-import { BoardState, ColumnDescriptor, TaskDescriptor } from '@/store/index'
+import { BoardState, TaskDescriptor } from '@/store/index'
 
 const store = useStore() as Store<BoardState>
 const router = useRouter()
 
 const isTaskOpen = computed(() => useRoute().name === 'task')
-let newTaskName = ref('')
+const newColumnName = ref('')
 
 function goToTask(taskId: number) {
   router.push({ name: 'task', params: { id: taskId } })
@@ -19,11 +19,12 @@ function close() {
 }
 
 function createTask(e: KeyboardEvent, tasks: TaskDescriptor[]) {
+  const input = e.target as HTMLInputElement
   store.commit('CREATE_TASK', {
     tasks: tasks,
-    name: newTaskName.value,
+    name: input.value,
   })
-  newTaskName.value = ''
+  input.value = ''
 }
 
 function pickupTask(e: DragEvent, taskIndex: number, columnIndex: number) {
@@ -86,6 +87,11 @@ function pickupColumn(e: DragEvent, columnIndex: number) {
     dataTransfer.setData('drag-type', 'column')
   }
 }
+
+function createColumn() {
+  store.commit('CREATE_COLUMN', newColumnName.value)
+  newColumnName.value = ''
+}
 </script>
 
 <template>
@@ -107,30 +113,47 @@ function pickupColumn(e: DragEvent, columnIndex: number) {
           >
             <v-card-title>{{ column.name }}</v-card-title>
             <v-divider></v-divider>
-            <div
-              v-for="(task, $taskIndex) of column.tasks"
-              :key="$taskIndex"
-              draggable="true"
-              @dragstart="pickupTask($event, $taskIndex, $columnIndex)"
-              @dragover.prevent
-              @dragenter.prevent
-              @drop.stop="moveItem($event, $columnIndex, $taskIndex)"
-              style="z-index: 1; transform: translate(0, 0)"
-            >
-              <v-card class="task-card" @click="goToTask(task.id)">
-                <v-card-title>{{ task.name }}</v-card-title>
-                <v-card-text>{{ task.description }}</v-card-text>
-                <v-divider></v-divider>
-              </v-card>
-            </div>
-            <v-text-field
-              label="+ Enter new task"
-              variant="outlined"
-              color="success"
-              class="bg-transparent mx-4"
-              v-model="newTaskName"
-              @keyup.enter="createTask($event, column.tasks)"
-            ></v-text-field>
+            <v-card-text>
+              <div
+                v-for="(task, $taskIndex) of column.tasks"
+                :key="$taskIndex"
+                draggable="true"
+                @dragstart="pickupTask($event, $taskIndex, $columnIndex)"
+                @dragover.prevent
+                @dragenter.prevent
+                @drop.stop="moveItem($event, $columnIndex, $taskIndex)"
+                style="z-index: 1; transform: translate(0, 0)"
+              >
+                <v-card class="task-card" @click="goToTask(task.id)">
+                  <v-card-title>{{ task.name }}</v-card-title>
+                  <v-card-text>{{ task.description }}</v-card-text>
+                  <v-divider></v-divider>
+                </v-card>
+              </div>
+            </v-card-text>
+            <v-card-actions>
+              <v-text-field
+                label="+ Enter new task"
+                variant="outlined"
+                color="success"
+                class="bg-transparent mx-4"
+                @keyup.enter="createTask($event, column.tasks)"
+              ></v-text-field>
+            </v-card-actions>
+          </v-card>
+        </v-col>
+        <v-col>
+          <v-card class="column-card" color="blue-grey-lighten-4">
+            <v-card-text>
+              <v-text-field
+                label="New Column"
+                variant="outlined"
+                color="success"
+                class="bg-transparent mx-4"
+                v-model="newColumnName"
+                @keyup.enter="createColumn"
+              ></v-text-field>
+            </v-card-text>
           </v-card>
         </v-col>
       </v-row>
