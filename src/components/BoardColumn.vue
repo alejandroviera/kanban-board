@@ -1,0 +1,119 @@
+<script lang="ts" setup>
+import { useStore, Store } from 'vuex'
+import { defineProps, ref } from 'vue'
+import { BoardState, ColumnDescriptor, TaskDescriptor } from '@/store/index'
+import BoardTask from '@/components/BoardTask.vue'
+
+export interface BoardColumnProps {
+  column: ColumnDescriptor
+  columnIndex: number
+}
+
+const store = useStore() as Store<BoardState>
+const props = defineProps<BoardColumnProps>()
+const newTaskName = ref('')
+
+function createTask() {
+  store.commit('CREATE_TASK', {
+    tasks: props.column.tasks,
+    name: newTaskName.value,
+  })
+  newTaskName.value = ''
+}
+
+function moveItem(e: DragEvent, columnIndex: number, taskIndex: number) {
+  const dataTransfer = e.dataTransfer
+  if (dataTransfer != null) {
+    const dragType = dataTransfer.getData('drag-type')
+    if (dragType === 'task') {
+      if (taskIndex == -1) {
+        taskIndex = store.state.board.columns[columnIndex].tasks.length
+      }
+      moveTask(e, columnIndex, taskIndex)
+    } else if (dragType === 'column') {
+      moveColumn(e, columnIndex)
+    }
+  }
+}
+
+function moveTask(e: DragEvent, columnIndex: number, taskIndex: number) {
+  const dataTransfer = e.dataTransfer
+  if (dataTransfer != null) {
+    const fromColumnIndex = parseInt(dataTransfer.getData('column-index'))
+    const fromTaskIndex = parseInt(dataTransfer.getData('task-index'))
+    store.commit('MOVE_TASK', {
+      fromColumn: store.state.board.columns[fromColumnIndex],
+      fromTaskIndex: fromTaskIndex,
+      toColumn: store.state.board.columns[columnIndex],
+      toTaskIndex: taskIndex,
+    })
+  }
+}
+
+function moveColumn(e: DragEvent, columnIndex: number) {
+  const dataTransfer = e.dataTransfer
+  if (dataTransfer != null) {
+    const fromColumnIndex = parseInt(dataTransfer.getData('column-index'))
+    store.commit('MOVE_COLUMN', {
+      fromColumnIndex: fromColumnIndex,
+      toColumnIndex: columnIndex,
+    })
+  }
+}
+
+function pickupColumn(e: DragEvent, columnIndex: number) {
+  const dataTransfer = e.dataTransfer
+  if (dataTransfer !== null) {
+    dataTransfer.effectAllowed = 'move'
+    dataTransfer.dropEffect = 'move'
+    dataTransfer.setData('column-index', columnIndex.toString())
+    dataTransfer.setData('drag-type', 'column')
+  }
+}
+</script>
+<template>
+  <v-col>
+    <v-card
+      class="column-card"
+      color="blue-grey-lighten-4"
+      @drop="moveItem($event, columnIndex, -1)"
+      @dragover.prevent
+      @dragenter.prevent
+      draggable="true"
+      @dragstart.self="pickupColumn($event, columnIndex)"
+    >
+      <v-card-title>{{ column.name }}</v-card-title>
+      <v-divider></v-divider>
+      <v-card-text>
+        <BoardTask
+          v-for="(task, $taskIndex) of column.tasks"
+          :key="$taskIndex"
+          :task="task"
+          :taskIndex="$taskIndex"
+          :columnIndex="columnIndex"
+        />
+      </v-card-text>
+      <v-card-actions>
+        <v-text-field
+          label="+ Enter new task"
+          variant="outlined"
+          color="success"
+          class="bg-transparent mx-4"
+          v-model="newTaskName"
+          @keyup.enter="createTask()"
+        ></v-text-field>
+      </v-card-actions>
+    </v-card>
+  </v-col>
+</template>
+<style>
+.column-card {
+  padding-bottom: 10pt;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border-radius: 0.25rem;
+}
+
+.task-card {
+  margin: 15pt;
+}
+</style>
