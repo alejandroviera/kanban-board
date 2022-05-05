@@ -3,7 +3,9 @@ import { BoardState, TaskDescriptor } from '@/store'
 import { defineProps } from 'vue'
 import { useStore, Store } from 'vuex'
 import { useRouter } from 'vue-router'
-import { moveItem } from '@/features/moveTasksOrColumns'
+import { moveItem, TransferData } from '@/features/moveTasksOrColumns'
+import BaseDrop from './base/BaseDrop.vue'
+import BaseDrag from './base/BaseDrag.vue'
 
 export interface BoardTaskProps {
   task: TaskDescriptor
@@ -19,31 +21,25 @@ function goToTask(taskId: number) {
   router.push({ name: 'task', params: { id: taskId } })
 }
 
-function pickupTask(e: DragEvent, taskIndex: number, columnIndex: number) {
-  const dataTransfer = e.dataTransfer
-  if (dataTransfer !== null) {
-    dataTransfer.effectAllowed = 'move'
-    dataTransfer.dropEffect = 'move'
-    dataTransfer.setData('task-index', taskIndex.toString())
-    dataTransfer.setData('column-index', columnIndex.toString())
-    dataTransfer.setData('drag-type', 'task')
-  }
+function onDrop(transferData: TransferData) {
+  moveItem(transferData, props.columnIndex, props.taskIndex)
 }
 </script>
 <template>
-  <div
-    draggable="true"
-    @dragstart="pickupTask($event, taskIndex, columnIndex)"
-    @dragover.prevent
-    @dragenter.prevent
-    @drop.stop="moveItem($event, columnIndex, taskIndex)"
-    style="z-index: 1; transform: translate(0, 0)"
-  >
-    <v-card class="task-card" @click="goToTask(task.id)">
-      <v-card-title>{{ task.name }}</v-card-title>
-      <v-card-text>{{ task.description }}</v-card-text>
-      <v-divider></v-divider>
-    </v-card>
-  </div>
+  <BaseDrop @drop="onDrop">
+    <BaseDrag
+      :transferData="{
+        dragType: 'task',
+        columnIndex: columnIndex,
+        taskIndex: taskIndex,
+      }"
+    >
+      <v-card class="task-card" @click="goToTask(task.id)">
+        <v-card-title>{{ task.name }}</v-card-title>
+        <v-card-text>{{ task.description }}</v-card-text>
+        <v-divider></v-divider>
+      </v-card>
+    </BaseDrag>
+  </BaseDrop>
 </template>
 <style></style>

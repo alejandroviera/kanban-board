@@ -2,42 +2,49 @@ import { BoardState } from '@/store'
 import { Store } from 'vuex'
 import store from '@/store/index'
 
-export function moveItem(e: DragEvent, columnIndex: number, taskIndex: number) {
-  const dataTransfer = e.dataTransfer
-  if (dataTransfer != null) {
-    const dragType = dataTransfer.getData('drag-type')
-    if (dragType === 'task') {
-      if (taskIndex == -1) {
-        taskIndex = store.state.board.columns[columnIndex].tasks.length
-      }
-      moveTask(e, columnIndex, taskIndex)
-    } else if (dragType === 'column') {
-      moveColumn(e, columnIndex)
+export interface TransferData {
+  dragType: string
+  columnIndex: number
+  taskIndex: number
+}
+
+export function moveItem(
+  transferData: TransferData,
+  columnIndex: number,
+  taskIndex: number
+) {
+  if (transferData.dragType === 'task') {
+    if (taskIndex == -1) {
+      taskIndex = store.state.board.columns[columnIndex].tasks.length
     }
+    moveTask(
+      transferData.columnIndex,
+      transferData.taskIndex,
+      columnIndex,
+      taskIndex
+    )
+  } else if (transferData.dragType === 'column') {
+    moveColumn(transferData.columnIndex, columnIndex)
   }
 }
 
-function moveTask(e: DragEvent, columnIndex: number, taskIndex: number) {
-  const dataTransfer = e.dataTransfer
-  if (dataTransfer != null) {
-    const fromColumnIndex = parseInt(dataTransfer.getData('column-index'))
-    const fromTaskIndex = parseInt(dataTransfer.getData('task-index'))
-    store.commit('MOVE_TASK', {
-      fromColumn: store.state.board.columns[fromColumnIndex],
-      fromTaskIndex: fromTaskIndex,
-      toColumn: store.state.board.columns[columnIndex],
-      toTaskIndex: taskIndex,
-    })
-  }
+function moveTask(
+  fromColumnIndex: number,
+  fromTaskIndex: number,
+  toColumnIndex: number,
+  toTaskIndex: number
+) {
+  store.commit('MOVE_TASK', {
+    fromColumn: store.state.board.columns[fromColumnIndex],
+    fromTaskIndex: fromTaskIndex,
+    toColumn: store.state.board.columns[toColumnIndex],
+    toTaskIndex: toTaskIndex,
+  })
 }
 
-function moveColumn(e: DragEvent, columnIndex: number) {
-  const dataTransfer = e.dataTransfer
-  if (dataTransfer != null) {
-    const fromColumnIndex = parseInt(dataTransfer.getData('column-index'))
-    store.commit('MOVE_COLUMN', {
-      fromColumnIndex: fromColumnIndex,
-      toColumnIndex: columnIndex,
-    })
-  }
+function moveColumn(fromColumnIndex: number, toColumnIndex: number) {
+  store.commit('MOVE_COLUMN', {
+    fromColumnIndex: fromColumnIndex,
+    toColumnIndex: toColumnIndex,
+  })
 }
